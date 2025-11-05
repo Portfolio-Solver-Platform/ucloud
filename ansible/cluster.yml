@@ -1,0 +1,20 @@
+- hosts: k8s-cluster
+  gather_facts: true
+  become: true
+  roles:
+    - docker
+    - cri-dockerd
+
+- hosts: control_plane
+  gather_facts: true
+  become: true
+  roles:
+    - kubernetes/control
+    - ctf-deps
+    - pulumi-deploy
+
+- hosts: workers
+  gather_facts: true
+  become: true
+  roles:
+    - kubernetes/worker

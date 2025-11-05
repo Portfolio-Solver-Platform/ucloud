@@ -1,0 +1,30 @@
+---
+- name: add k8s gpg key
+  get_url:
+    url: https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key
+    dest: /etc/apt/keyrings/kubernetes-apt-keyring.asc
+    mode: "0644"
+    force: true
+
+- name: add k8s repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /"
+    state: present
+    filename: "kubernetes"
+
+- name: install kubelet
+  apt:
+    name: kubelet
+    state: present
+    update_cache: true
+
+- name: install kubeadm
+  apt:
+    name: kubeadm
+    state: present
+
+- name: install yq
+  get_url:
+    url: https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+    dest: /usr/bin/yq
+    mode: "0755"

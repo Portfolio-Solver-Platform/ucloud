@@ -1,0 +1,13 @@
+[control_plane]
+control ansible_host=x.x.x.x ansible_user=ucloud
+
+[workers]
+worker0 ansible_host=x.x.x.x ansible_user=ucloud
+worker1 ansible_host=x.x.x.x ansible_user=ucloud
+
+[k8s-cluster:children]
+control_plane
+workers
+
+[k8s-cluster:vars]
+tailscale_login_server=x.x.x.x:8080

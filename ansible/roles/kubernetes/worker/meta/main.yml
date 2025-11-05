@@ -1,0 +1,5 @@
+---
+dependencies:
+  - role: tailscale
+  - role: commons/pre-install
+  - role: cri-dockerd

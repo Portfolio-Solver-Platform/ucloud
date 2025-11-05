@@ -1,0 +1,4 @@
+---
+dependencies:
+  - role: kubernetes/control
+  - role: ctf-deps

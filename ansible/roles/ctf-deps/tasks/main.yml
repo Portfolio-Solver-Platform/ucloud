@@ -1,0 +1,44 @@
+# TODO: ensure idempotent
+
+- name: download pulumi install script
+  become_user: "{{ ansible_user }}"
+  get_url:
+    url: https://get.pulumi.com
+    dest: /tmp/pulumi_install.sh
+    mode: "u+rwx"
+
+- name: install pulumi
+  become_user: "{{ ansible_user }}"
+  shell: "/tmp/pulumi_install.sh"
+
+- name: download nvm install script
+  become_user: "{{ ansible_user }}"
+  get_url:
+    url: https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh
+    dest: /tmp/nvm_install.sh
+    mode: "u+rwx"
+
+- name: install nvm
+  become_user: "{{ ansible_user }}"
+  shell: "/tmp/nvm_install.sh"
+  args:
+    executable: /bin/bash
+
+- name: install node
+  become_user: "{{ ansible_user }}"
+  shell: |
+    source ~/.nvm/nvm.sh
+    nvm install 22
+  args:
+    executable: /bin/bash
+
+- name: download helm install script
+  become_user: "{{ ansible_user }}"
+  get_url:
+    url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    dest: /tmp/helm_install.sh
+    mode: "u+rwx"
+
+- name: install helm
+  become_user: "{{ ansible_user }}"
+  shell: "/tmp/helm_install.sh"

@@ -1,0 +1,31 @@
+---
+- name: check for tailscale command
+  command: command -v tailscale >/dev/null 2>&1
+  register: installed
+  no_log: true
+  ignore_errors: true
+
+- name: download tailscale install script
+  get_url:
+    url: https://tailscale.com/install.sh
+    dest: /tmp/tailscale-install.sh
+    mode: "u+rwx"
+  when: installed.rc != 0
+  register: download
+
+- name: run tailscale install script
+  shell: /tmp/tailscale-install.sh
+  when: download.changed
+
+- name: remove tailscale install script
+  file:
+    path: /tmp/tailscale-install.sh
+    state: absent
+
+# TODO: separate role for worker and control; set --hostname=ctf-core for control
+- name: connect to tailscale
+  shell: |
+    sudo tailscale up --authkey {{ lookup('file', '../tailscale_key')}} --login-server "{{ tailscale_login_server }}" --hostname {{ tailscale_hostname }}
+
+# TODO: after everything is deployed, new role to expose service
+# command: sudo tailscale funnel --tls-terminated-tcp=443 tcp://localhost:<service-port>
