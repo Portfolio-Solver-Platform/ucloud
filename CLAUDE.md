@@ -4,14 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-This repository contains Infrastructure as Code (IaC) for deploying a Kubernetes cluster with Headscale (self-hosted Tailscale coordination server) on uCloud or GCP infrastructure. The setup uses Ansible for configuration management and Terraform for cloud resource provisioning.
+This repository contains Infrastructure as Code (IaC) for deploying a Kubernetes cluster with Headscale (self-hosted Tailscale coordination server) on uCloud infrastructure. The setup uses Ansible for configuration management.
+
+**Note**: The Headscale coordination server and gateway are not yet implemented in this repository. Currently, nodes are configured with the `tailscale` role to connect to an external Headscale server.
 
 ## Architecture
 
-The system has two deployment targets:
-
-1. **uCloud deployment** (`ansible/` directory): Main deployment for uCloud infrastructure
-2. **GCP deployment** (`terraform/` + `ansible-gcp/` directories): Provisions a GCP VM running Headscale, then configures it via Ansible
+The system deploys a Kubernetes cluster on uCloud infrastructure (`ansible/` directory).
 
 ### Networking Strategy
 
@@ -28,8 +27,6 @@ The system has two deployment targets:
 
 ## Running Playbooks
 
-### uCloud Deployment
-
 Prerequisites:
 - SSH key configured in `ansible/ansible.cfg` (default: `~/.ssh/id_ed25519`)
 - Tailscale auth key in `tailscale_key` file at repository root
@@ -43,29 +40,7 @@ ansible-playbook cluster.yml
 The `hosts.ini` must define:
 - `[control_plane]` group: Single control plane node
 - `[workers]` group: Worker nodes
-- `[k8s-cluster:vars]` with `tailscale_login_server` pointing to Headscale server
-
-### GCP Deployment
-
-Prerequisites:
-- GCP credentials file at `terraform/credentials.json`
-- SSH public key at repository root: `ucloud_key.pub`
-- `terraform/terraform.tfvars` with `gc_user` variable (see `terraform.tfvars.example`)
-
-```bash
-cd terraform
-terraform apply  # or: tofu apply
-
-cd ../ansible-gcp
-ansible-playbook cluster.yml
-```
-
-Terraform creates:
-- GCP VM with static IP for Headscale
-- Network and firewall rules (SSH, HTTP/HTTPS, port 8080)
-- Auto-generated `ansible-gcp/hosts.ini` and `ansible-gcp/headscale.yml` files
-
-To destroy GCP resources, use targeted destruction (see `terraform/README.md`) to avoid issues with persistent static IP.
+- `[k8s-cluster:vars]` with `tailscale_login_server` pointing to an external Headscale server
 
 ## Role Organization
 
@@ -84,11 +59,6 @@ Applied in this order per `ansible/cluster.yml`:
 
 **Workers only:**
 - `kubernetes/worker`: Joins worker nodes using join command from control plane
-
-### GCP-Specific Roles (`ansible-gcp/roles/`)
-
-- `headscale`: Installs and configures Headscale coordination server
-- `nginx`: Reverse proxy for Headscale
 
 ### Additional Roles
 
@@ -117,8 +87,6 @@ Flannel manifest is modified post-download to add `--iface=tailscale0` argument 
 
 - `ansible/ansible.cfg`: SSH key location, pipelining enabled, profile_tasks callback
 - `ansible/hosts.ini`: Inventory (gitignored, see `.example` file)
-- `terraform/provider.tf`: GCP provider config, VM specs (e2-medium, Ubuntu 24.04 LTS)
-- `terraform/headscale.yml.tmpl`: Template for Headscale configuration
 - `tailscale_key`: Auth key for Tailscale (gitignored, must be created manually)
 
 ## Common Issues
