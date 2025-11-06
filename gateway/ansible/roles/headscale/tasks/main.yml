@@ -1,0 +1,42 @@
+- name: download headscale
+  get_url:
+    url: https://github.com/juanfont/headscale/releases/download/v0.23.0/headscale_0.23.0_linux_amd64.deb
+    dest: /tmp/headscale.deb
+    mode: "u+rwx"
+
+- name: install headscale
+  apt:
+    deb: /tmp/headscale.deb
+
+- name: copy headscale config to vm
+  copy:
+    src: "./headscale.yml"
+    dest: "/etc/headscale/config.yaml"
+
+- name: enable headscale service
+  systemd:
+    name: headscale
+    state: started
+    enabled: yes
+    daemon_reload: true
+
+- name: create headscale user
+  shell: |
+    if $(headscale users list | grep -q ctf)
+    then
+      echo "user ctf exists"
+    else
+      headscale users create ctf
+    fi
+
+- name: generate headscale key
+  shell: |
+    if [ ! -f ~/headscale_key ]; then
+      headscale preauthkeys create --user ctf >> ~/headscale_key
+    fi
+
+- name: fetch headscale key file
+  fetch:
+    src: "~/headscale_key"
+    dest: "../tailscale_key"
+    flat: yes

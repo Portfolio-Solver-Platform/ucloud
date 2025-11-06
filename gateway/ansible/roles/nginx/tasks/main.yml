@@ -1,0 +1,36 @@
+- name: install nginx requirements
+  apt:
+    pkg:
+      - curl
+      - gnupg2
+      - ca-certificates
+      - lsb-release
+      - ubuntu-keyring
+    update_cache: true
+
+# taken from here: https://github.com/nginxinc/ansible-role-nginx/blob/main/tasks/keys/setup-keys.yml
+- name: add NGINX signing key
+  ansible.builtin.apt_key:
+    id: 8540A6F18833A80E9C1653A42FD21310B49F6B46
+    keyring: /usr/share/keyrings/nginx-archive-keyring.gpg
+    url: https://nginx.org/keys/nginx_signing.key
+
+- name: add nginx repository
+  shell: |
+    echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] \
+    http://nginx.org/packages/ubuntu `lsb_release -cs` nginx" \
+      | tee /etc/apt/sources.list.d/nginx.list
+
+- name: install nginx
+  apt:
+    name: nginx
+    state: present
+    update_cache: true
+
+- name: copy nginx config to vm
+  copy:
+    src: "./nginx.conf"
+    dest: "/etc/nginx/nginx.conf"
+# TODO: merge this playbook with ucloud playbook, start nginx when Tailscale VPN is completely set up
+# - name: start nginx
+#   shell: nginx -s reload

@@ -1,5 +1,6 @@
 # TODO: ensure idempotent
 
+# ==== Install Pulumi
 - name: download pulumi install script
   become_user: "{{ ansible_user }}"
   get_url:
@@ -11,6 +12,7 @@
   become_user: "{{ ansible_user }}"
   shell: "/tmp/pulumi_install.sh"
 
+# ==== Install node
 - name: download nvm install script
   become_user: "{{ ansible_user }}"
   get_url:
@@ -32,6 +34,7 @@
   args:
     executable: /bin/bash
 
+# ==== Install helm
 - name: download helm install script
   become_user: "{{ ansible_user }}"
   get_url:
