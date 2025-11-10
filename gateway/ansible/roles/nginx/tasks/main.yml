@@ -31,6 +31,5 @@
   copy:
     src: "./nginx.conf"
     dest: "/etc/nginx/nginx.conf"
-# TODO: merge this playbook with ucloud playbook, start nginx when Tailscale VPN is completely set up
-# - name: start nginx
-#   shell: nginx -s reload
+- name: start nginx
+  shell: nginx
