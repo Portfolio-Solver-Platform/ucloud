@@ -1,0 +1,3 @@
+gateway/tailscale_key
+gateway/ansible/roles/headscale/tasks/headscale.yml
+gateway/ansible/hosts.ini

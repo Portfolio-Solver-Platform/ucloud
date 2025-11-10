@@ -13,12 +13,37 @@
     src: "./headscale.yml"
     dest: "/etc/headscale/config.yaml"
 
-- name: enable headscale service
-  systemd:
-    name: headscale
-    state: started
-    enabled: yes
-    daemon_reload: true
+- name: install supervisor
+  apt:
+    name: supervisor
+    state: present
+    update_cache: yes
+
+- name: create headscale supervisor config
+  copy:
+    content: |
+      [program:headscale]
+      command=/usr/bin/headscale serve
+      autostart=true
+      autorestart=true
+      stderr_logfile=/var/log/headscale.err.log
+      stdout_logfile=/var/log/headscale.out.log
+      user=root
+    dest: /etc/supervisor/conf.d/headscale.conf
+  notify: restart supervisor
+
+- name: ensure supervisor is running
+  shell: |
+    if ! pgrep supervisord > /dev/null; then
+      supervisord -c /etc/supervisor/supervisord.conf
+    fi
+
+- name: reload supervisor and start headscale
+  shell: |
+    supervisorctl reread
+    supervisorctl update
+    supervisorctl start headscale
+  ignore_errors: yes
 
 - name: create headscale user
   shell: |
