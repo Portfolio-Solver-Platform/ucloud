@@ -31,5 +31,28 @@
   copy:
     src: "./nginx.conf"
     dest: "/etc/nginx/nginx.conf"
+
+- name: install certbot and nginx plugin
+  apt:
+    name:
+      - certbot
+      - python3-certbot-nginx
+    state: present
+    update_cache: true
+
+- name: check if certificate already exists
+  stat:
+    path: "/etc/letsencrypt/live/clustervpn.jonasbork.dk/fullchain.pem"
+  register: cert_exists
+
+- name: obtain Let's Encrypt certificate
+  shell: |
+    certbot --nginx -d clustervpn.jonasbork.dk \
+      --non-interactive \
+      --agree-tos \
+      --email jonas10bork@gmail.com \
+      --redirect
+  when: not cert_exists.stat.exists
+
 - name: start nginx
   shell: nginx
